@@ -9,7 +9,7 @@ Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/t
     class Page
       include MongoMapper::Document
 
-      plugin ActsAsVersioned
+      plugin MongoMapper::Acts::Versioned
 
       key :title, String
     end

@@ -1,11 +1,11 @@
 require 'spec_helper'
 
-describe ActsAsVersioned do
+describe MongoMapper::Acts::Versioned do
   before :all do
     class Landmark
       include MongoMapper::Document
 
-      plugin ActsAsVersioned
+      plugin MongoMapper::Acts::Versioned
 
       self.skipped_keys << 'depth'
 
