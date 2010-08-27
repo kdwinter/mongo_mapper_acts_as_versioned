@@ -37,7 +37,7 @@ Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/t
 
 Default ignored keys are:
 
-* "\_id'
+* "\_id"
 * "created\_at"
 * "updated\_at"
 * "creator\_id"
