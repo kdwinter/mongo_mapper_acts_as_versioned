@@ -11,18 +11,18 @@ task :default => :spec
 
 desc 'Builds the gem'
 task :build do
-  sh "gem build mongo_mapper_acts_as_versioned.gemspec"
+  sh 'gem build mongo_mapper_acts_as_versioned.gemspec'
 end
 
 desc 'Builds and installs the gem'
 task :install => :build do
-  sh "gem install mongo_mapper_acts_as_versioned-#{ActsAsVersioned::Version}"
+  sh "gem install mongo_mapper_acts_as_versioned-#{ActsAsVersioned::VERSION}"
 end
 
 desc 'Tags version, pushes to remote, and pushes gem'
 task :release => :build do
-  sh "git tag v#{ActsAsVersioned::Version}"
-  sh "git push origin master"
-  sh "git push origin v#{ActsAsVersioned::Version}"
-  sh "gem push mongo_mapper_acts_as_versioned-#{ActsAsVersioned::Version}.gem"
+  sh "git tag v#{ActsAsVersioned::VERSION}"
+  sh 'git push origin master'
+  sh "git push origin v#{ActsAsVersioned::VERSION}"
+  sh "gem push mongo_mapper_acts_as_versioned-#{ActsAsVersioned::VERSION}.gem"
 end
