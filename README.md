@@ -4,7 +4,31 @@ Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/t
 
 == Basic Usage
 
+    class Page
+      include MongoMapper::Document
 
+      plugin ActsAsVersioned
+
+      key :title,   String
+    end
+
+    page = Page.create(:title => 'title')
+    page.version              # => 1
+    page.versions.size        # => 1
+
+    page.title = 'new title'
+    page.save
+
+    page = page.reload
+    page.version              # => 2
+    page.versions.size        # => 2
+    page.title                # => 'new title'
+
+    page.revert_to!(1)
+    page = page.reload
+    page.version              # => 1
+    page.versions.size        # => 2
+    page.title                # => 'title'
 
 == Tested with
 

@@ -1,5 +1,3 @@
-require 'mongo_mapper' unless Object.const_defined?(:MongoMapper)
-
 module ActsAsVersioned
   CALLBACKS = [:set_new_version, :save_version, :save_version?]
 
