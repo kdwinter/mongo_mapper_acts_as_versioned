@@ -25,6 +25,7 @@ Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/t
     page.title                # => 'new title'
 
     page.revert_to!(1)
+
     page = page.reload
     page.version              # => 1
     page.versions.size        # => 2
