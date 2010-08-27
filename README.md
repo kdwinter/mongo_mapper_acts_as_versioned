@@ -60,6 +60,10 @@ Simply add `self.skipped_keys << 'new_skipped_key'` somewhere in your model.
 * Properly document those options
 * Support SCI
 
+## Bundler note
+
+Make sure to specify `:require => 'acts_as_versioned'` in your Gemfile.
+
 ## Copyright
 
 Copyright (c) 2010 Gigamo &lt;gigamo@gmail.com&gt;. See LICENSE for details.
