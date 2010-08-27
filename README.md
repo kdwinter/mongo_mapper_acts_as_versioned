@@ -2,9 +2,9 @@
 
 Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/technoweenie/acts_as_versioned). Stores changed attributes in a Hash key instead of copying all keys from the original model.
 
-# Usage
+## Usage
 
-## Basic Example
+### Basic Example
 
     class Page
       include MongoMapper::Document
@@ -33,7 +33,7 @@ Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/t
     page.versions.size        # => 2
     page.title                # => 'title'
 
-## Ignoring additional keys
+### Ignoring additional keys
 
 Simply add `self.skipped_keys << 'new_skipped_key'` somewhere in your model.
 
