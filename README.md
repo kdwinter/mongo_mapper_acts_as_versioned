@@ -33,6 +33,18 @@ Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/t
     page.versions.size        # => 2
     page.title                # => 'title'
 
+### Keys that do not trigger new versions
+
+Default ignored keys are:
+
+* '\_id'
+* 'created\_at'
+* 'updated\_at'
+* 'creator\_id'
+* 'updater\_id'
+* 'version'
+* The versioned class' foreign key
+
 ### Ignoring additional keys
 
 Simply add `self.skipped_keys << 'new_skipped_key'` somewhere in your model.
