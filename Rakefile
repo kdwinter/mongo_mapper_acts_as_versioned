@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'rake'
-require File.expand_path('../lib/acts_as_versioned/version', __FILE__)
+require File.expand_path('../lib/acts_as_versioned', __FILE__)
 
 task :spec do
   files_to_run = Dir['spec/**/*_spec.rb'].join(' ')

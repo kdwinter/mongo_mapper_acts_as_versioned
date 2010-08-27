@@ -43,11 +43,13 @@ Default ignored keys are:
 * "creator\_id"
 * "updater\_id"
 * "version"
-* the versioned class' foreign key
+* "\_type"
+* "\_versioned\_type"
+* versioned\_foreign\_key
 
 ### Ignoring additional keys
 
-Simply add `self.skipped_keys << 'new_skipped_key'` somewhere in your model.
+Simply add `self.non_versioned_keys << 'new_skipped_key'` somewhere in your model.
 
 ## Tested with
 
@@ -58,7 +60,6 @@ Simply add `self.skipped_keys << 'new_skipped_key'` somewhere in your model.
 
 * Add loads more options
 * Properly document those options
-* Support SCI
 
 ## Bundler note
 

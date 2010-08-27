@@ -7,11 +7,15 @@ describe MongoMapper::Acts::Versioned do
 
       plugin MongoMapper::Acts::Versioned
 
-      self.skipped_keys << 'depth'
+      self.non_versioned_keys << 'depth'
 
       key :title, String
       key :depth, Integer
       timestamps!
+    end
+
+    class Sublandmark < Landmark
+      key :location, String
     end
   end
 
@@ -19,6 +23,9 @@ describe MongoMapper::Acts::Versioned do
     Landmark::Version.original_class.should == Landmark
     Landmark::Version.collection_name.should == 'landmark_versions'
     Landmark.versioned_class.should == Landmark::Version
+    Sublandmark::Version.original_class.should == Landmark
+    Sublandmark::Version.collection_name.should == 'landmark_versions'
+    Sublandmark.versioned_class.should == Landmark::Version
   end
 
   it 'should save a versioned copy' do
@@ -53,7 +60,6 @@ describe MongoMapper::Acts::Versioned do
     (2..10).each do |i|
       l = Landmark.first
       l.update_attributes(:title => "title#{i}")
-      l.version.should == i
     end
 
     l = l.reload
@@ -73,7 +79,6 @@ describe MongoMapper::Acts::Versioned do
     (2..10).each do |i|
       l = Landmark.first
       l.update_attributes(:title => "title#{i}")
-      l.version.should == i
     end
 
     l = l.reload
@@ -93,7 +98,6 @@ describe MongoMapper::Acts::Versioned do
     (2..10).each do |i|
       l = Landmark.first
       l.update_attributes(:title => "title#{i}")
-      l.version.should == i
     end
 
     l_version = l.reload.versions.last
@@ -170,5 +174,58 @@ describe MongoMapper::Acts::Versioned do
     it 'should find the next version' do
       @l.versions[0].next.should == @l.versions[1]
     end
+  end
+
+  it 'should save a versioned class with sci' do
+    s = Sublandmark.create!(:title => 'first title')
+    s.new_record?.should be_false
+    s.version.should == 1
+
+    s.versions.size.should == 1
+    s.versions.first.should be_a(Landmark.versioned_class)
+    s.versions.first.attributes.keys.should include('_version_type')
+    s.versions.first._version_type.should == 'Sublandmark'
+    s.versions.first.landmark.should == s
+  end
+
+  it 'should rollback with sti' do
+    s = Sublandmark.create(:title => 'title')
+    (2..5).each do |i|
+      s = Sublandmark.first
+      s.update_attributes(:title => "title#{i}")
+    end
+
+    s = s.reload
+    s.version.should == 5
+    s.versions.size.should == 5
+    s.title.should == 'title5'
+    s.revert_to!(3).should be_true
+    s = s.reload
+    s.version.should == 3
+    s.versions.size.should == 5
+    s.title.should == 'title3'
+
+    s.versions.each do |version|
+      version._version_type.should == 'Sublandmark'
+    end
+
+    l = Landmark.create(:title => 'other title')
+    (2..5).each do |i|
+      l = Landmark.first
+      l.update_attributes(:title => "other title#{i}")
+    end
+
+    l = l.reload
+    l.versions.should_not == s.versions
+    l.version.should == 5
+    l.versions.size.should == 5
+    l.title.should == 'other title5'
+    l.revert_to!(3).should be_true
+    l = l.reload
+    l.version.should == 3
+    l.versions.size.should == 5
+    l.title.should == 'other title3'
+
+    Landmark::Version.count.should == 10
   end
 end
