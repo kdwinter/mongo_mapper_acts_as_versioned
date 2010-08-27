@@ -43,4 +43,4 @@ Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/t
 
 ## Copyright
 
-Copyright (c) 2010 Gigamo @lt;gigamo@gmail.com&gt;. See LICENSE for details.
+Copyright (c) 2010 Gigamo &lt;gigamo@gmail.com&gt;. See LICENSE for details.
