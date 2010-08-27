@@ -9,7 +9,7 @@ Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/t
 
       plugin ActsAsVersioned
 
-      key :title,   String
+      key :title, String
     end
 
     page = Page.create(:title => 'title')
@@ -40,6 +40,7 @@ Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/t
 
 * Add loads more options
 * Properly document those options
+* Support SCI
 
 ## Copyright
 
