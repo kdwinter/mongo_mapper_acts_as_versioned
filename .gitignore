@@ -1,0 +1,6 @@
+*.swp
+.bundle
+.DS_Store
+Thumbs.db
+*.rbc
+*.tmproj
