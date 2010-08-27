@@ -141,7 +141,7 @@ module MongoMapper
         end
 
         def next_version
-          (new_record? ? 0 : versions.map(&:version).max) + 1
+          new_record? || versions.empty? ? 1 : versions.map(&:version).max.next
         end
       end
 
