@@ -16,13 +16,13 @@ end
 
 desc 'Builds and installs the gem'
 task :install => :build do
-  sh "gem install mongo_mapper_acts_as_versioned-#{MongoMapper::ActsAsVersioned::Version}"
+  sh "gem install mongo_mapper_acts_as_versioned-#{ActsAsVersioned::Version}"
 end
 
 desc 'Tags version, pushes to remote, and pushes gem'
 task :release => :build do
-  sh "git tag v#{MongoMapper::ActsAsVersioned::Version}"
+  sh "git tag v#{ActsAsVersioned::Version}"
   sh "git push origin master"
-  sh "git push origin v#{MongoMapper::ActsAsVersioned::Version}"
-  sh "gem push mongo_mapper_acts_as_versioned-#{MongoMapper::ActsAsVersioned::Version}.gem"
+  sh "git push origin v#{ActsAsVersioned::Version}"
+  sh "gem push mongo_mapper_acts_as_versioned-#{ActsAsVersioned::Version}.gem"
 end
