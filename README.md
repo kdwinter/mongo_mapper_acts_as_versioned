@@ -1,6 +1,6 @@
 # MongoMapper::ActsAsVersioned
 
-Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/technoweenie/acts_as_versioned).
+Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/technoweenie/acts_as_versioned). Stores changed attributes in a Hash key instead of copying all keys from the original model.
 
 # Basic Usage
 
