@@ -1,6 +1,6 @@
 # ActsAsVersioned for [MongoMapper](http://github.com/jnunemaker/mongomapper)
 
-Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/technoweenie/acts_as_versioned). Stores changed attributes in a Hash key instead of copying all keys from the original model.
+Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/technoweenie/acts_as_versioned). Stores changed attributes in a Hash key inside an Embedded Document instead of copying all keys from the original model.
 
 ## Usage
 

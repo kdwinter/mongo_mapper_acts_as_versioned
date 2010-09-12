@@ -21,11 +21,7 @@ describe MongoMapper::Acts::Versioned do
     end
 
     it 'should set the correct properties on the version class' do
-      Landmark::Version.original_class.should == Landmark
-      Landmark::Version.collection_name.should == 'landmark_versions'
       Landmark.versioned_class.should == Landmark::Version
-      Sublandmark::Version.original_class.should == Landmark
-      Sublandmark::Version.collection_name.should == 'landmark_versions'
       Sublandmark.versioned_class.should == Landmark::Version
     end
 
@@ -87,7 +83,7 @@ describe MongoMapper::Acts::Versioned do
       l.versions.size.should == 10
       l.title.should == 'title10'
 
-      l.revert_to!(l.versions.find_by_version(7)).should be_true
+      l.revert_to!(l.versions[7]).should be_true
       l = l.reload
       l.version.should == 7
       l.versions.size.should == 10
@@ -102,7 +98,7 @@ describe MongoMapper::Acts::Versioned do
       end
 
       l_version = l.reload.versions.last
-      l_version.landmark.should == l.reload
+      l_version._root_document.should == l.reload
     end
 
     it 'should not create new versions for skipped keys' do
@@ -145,36 +141,10 @@ describe MongoMapper::Acts::Versioned do
 
     it 'should store changes in a hash' do
       l = Landmark.create(:title => 'title')
-      l.versions[0].changed_attributes.should == {'title' => 'title'}
+      l.versions[1].modified.should == {'title' => 'title'}
 
       l.update_attributes(:title => 'changed title', :depth => 1)
-      l.reload.versions[1].changed_attributes.should == {'title' => 'changed title'}
-    end
-
-    context 'finders' do
-      before :each do
-        @l = Landmark.create(:title => 'title')
-        (2..5).each do |i|
-          Landmark.first.update_attributes(:title => "title#{i}")
-        end
-        @l = @l.reload
-      end
-
-      it 'should find the earliest version' do
-        @l.versions.earliest.should == @l.versions.find_by_version(1)
-      end
-
-      it 'should find the latest version' do
-        @l.versions.latest.should == @l.versions.find_by_version(5)
-      end
-
-      it 'should find the previous version' do
-        @l.versions[1].previous.should == @l.versions[0]
-      end
-
-      it 'should find the next version' do
-        @l.versions[0].next.should == @l.versions[1]
-      end
+      l.reload.versions[2].modified.should == {'title' => 'changed title'}
     end
 
     it 'should save a versioned class with sci' do
@@ -184,32 +154,10 @@ describe MongoMapper::Acts::Versioned do
 
       s.versions.size.should == 1
       s.versions.first.should be_a(Landmark.versioned_class)
-      s.versions.first.attributes.keys.should include('_version_type')
-      s.versions.first._version_type.should == 'Sublandmark'
-      s.versions.first.landmark.should == s
+      s.versions.first._root_document.should == s
     end
 
-    it 'should rollback with sti' do
-      s = Sublandmark.create(:title => 'title')
-      (2..5).each do |i|
-        s = Sublandmark.first
-        s.update_attributes(:title => "title#{i}")
-      end
-
-      s = s.reload
-      s.version.should == 5
-      s.versions.size.should == 5
-      s.title.should == 'title5'
-      s.revert_to!(3).should be_true
-      s = s.reload
-      s.version.should == 3
-      s.versions.size.should == 5
-      s.title.should == 'title3'
-
-      s.versions.each do |version|
-        version._version_type.should == 'Sublandmark'
-      end
-
+    it 'should rollback with sci' do
       l = Landmark.create(:title => 'other title')
       (2..5).each do |i|
         l = Landmark.first
@@ -217,7 +165,6 @@ describe MongoMapper::Acts::Versioned do
       end
 
       l = l.reload
-      l.versions.should_not == s.versions
       l.version.should == 5
       l.versions.size.should == 5
       l.title.should == 'other title5'
@@ -227,7 +174,22 @@ describe MongoMapper::Acts::Versioned do
       l.versions.size.should == 5
       l.title.should == 'other title3'
 
-      Landmark::Version.count.should == 10
+      s = Sublandmark.create(:title => 'title')
+      (2..5).each do |i|
+        s = Sublandmark.first
+        s.update_attributes(:title => "title#{i}")
+      end
+
+      s = s.reload
+      s.versions.should_not == l.versions
+      s.version.should == 5
+      s.versions.size.should == 5
+      s.title.should == 'title5'
+      s.revert_to!(3).should be_true
+      s = s.reload
+      s.version.should == 3
+      s.versions.size.should == 5
+      s.title.should == 'title3'
     end
   end
 
@@ -248,23 +210,13 @@ describe MongoMapper::Acts::Versioned do
       end
     end
 
-    it 'should share the collection' do
-      Page.versioned_collection_name.should == 'node_versions'
-      Post.versioned_collection_name.should == 'node_versions'
-    end
-
     it 'should version only the subclass' do
       page = Page.create(:title => 'page title')
       post = Post.create(:title => 'post title')
       page.version.should == 1
       page.versions.size.should == 1
-      page.versions.first._version_type.should == 'Page'
       post.version.should == 1
       post.versions.size.should == 1
-      post.versions.first._version_type.should == 'Post'
-
-      Page::Version.count.should == 2
-      Post::Version.count.should == 2
     end
   end
 end
