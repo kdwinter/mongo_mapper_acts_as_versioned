@@ -9,7 +9,7 @@ module MongoMapper
           cattr_accessor :versioned_class_name, :non_versioned_keys
 
           self.versioned_class_name = :Version
-          self.non_versioned_keys   = %w(
+          self.non_versioned_keys = %w(
             _id _type created_at updated_at creator_id updater_id version
           )
 
@@ -21,8 +21,8 @@ module MongoMapper
           end
 
           many :versions, :class => "#{self}::#{versioned_class_name}".constantize do
-            def [](given_version)
-              detect {|version| version.version.to_s == given_version.to_s }
+            def [](version)
+              detect { |doc| doc.version.to_s == version.to_s }
             end
           end
         end
@@ -35,9 +35,11 @@ module MongoMapper
         def save_version
           if new_record? || save_version?
             self.version = next_version
+
             rev = self.class.versioned_class.new
             clone_attributes(self, rev)
             rev.version = version
+
             self.versions << rev
           end
         end
@@ -56,7 +58,7 @@ module MongoMapper
         end
 
         def revert_to!(version)
-          revert_to(version) ? save_without_revision : false
+          revert_to(version) and save_without_revision or false
         end
 
         def save_without_revision
@@ -67,9 +69,7 @@ module MongoMapper
         end
 
         def save_without_revision!
-          without_revision do
-            save!
-          end
+          without_revision { save! }
         end
 
         def clone_attributes(orig_model, new_model)
