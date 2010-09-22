@@ -1,14 +1,15 @@
 module MongoMapper
   module Acts
     module Versioned
-      VERSION   = '0.0.10'
-      CALLBACKS = [:save_version, :save_version?]
+      VERSION   = '0.0.11'
+      CALLBACKS = [:save_version, :save_version?, :clear_old_versions]
 
       def self.configure(model)
         model.class_eval do
-          cattr_accessor :versioned_class_name, :non_versioned_keys
+          cattr_accessor :versioned_class_name, :non_versioned_keys, :max_version_limit
 
           self.versioned_class_name = :Version
+          self.max_version_limit = 0
           self.non_versioned_keys = %w(
             _id _type created_at updated_at creator_id updater_id version
           )
@@ -29,6 +30,7 @@ module MongoMapper
 
         model.key :version, Integer
         model.before_save :save_version
+        model.before_save :clear_old_versions
       end
 
       module InstanceMethods
@@ -41,6 +43,15 @@ module MongoMapper
             rev.version = version
 
             self.versions << rev
+          end
+        end
+
+        def clear_old_versions
+          return if self.class.max_version_limit == 0
+          excess_bagage = version.to_i - self.class.max_version_limit
+
+          if excess_bagage > 0
+            versions.reject! { |v| v.version.to_i <= excess_bagage }
           end
         end
 

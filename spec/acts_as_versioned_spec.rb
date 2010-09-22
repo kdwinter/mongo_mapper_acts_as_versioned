@@ -33,6 +33,23 @@ describe MongoMapper::Acts::Versioned do
       l.versions.first.should be_a(Landmark.versioned_class)
     end
 
+    it 'should clear old versions when a limit is set' do
+      Landmark.max_version_limit = 3
+
+      l = Landmark.create(:title => 'title')
+      (2..10).each do |i|
+        l = Landmark.first
+        l.update_attributes(:title => "title#{i}")
+      end
+
+      l = l.reload
+      l.versions.size.should == 3
+      l.versions.first.version.should == 8
+      l.versions.last.version.should == 10
+
+      Landmark.max_version_limit = 0
+    end
+
     it 'should save without revision' do
       l = Landmark.create(:title => 'title')
       l.version.should == 1
