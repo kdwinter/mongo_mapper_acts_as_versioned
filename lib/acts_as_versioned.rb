@@ -57,21 +57,21 @@ module MongoMapper
           end
         end
 
-        def revert_to(version)
-          if version.is_a?(self.class.versioned_class)
-            return false if version.new_record?
+        def revert_to(rev)
+          if rev.is_a?(self.class.versioned_class)
+            return false if rev.new_record?
           else
-            return false unless version = versions[version]
+            return false unless rev = versions[rev]
           end
 
-          clone_attributes(version, self)
-          self.version = version.version
+          clone_attributes(rev, self)
+          self.version = rev.version
 
           true
         end
 
-        def revert_to!(version)
-          revert_to(version) and save_without_revision or false
+        def revert_to!(rev)
+          revert_to(rev) and save_without_revision or false
         end
 
         def save_without_revision
