@@ -1,4 +1,5 @@
-require File.expand_path('../lib/acts_as_versioned', __FILE__)
+$:.push File.expand_path("../lib", __FILE__)
+require 'acts_as_versioned/version'
 
 Gem::Specification.new do |gem|
   gem.name        = 'mongo_mapper_acts_as_versioned'
@@ -14,9 +15,11 @@ Gem::Specification.new do |gem|
 
   gem.require_paths      = ['lib']
 
-  gem.files =
-    Dir['{lib,spec}/**/*', 'LICENSE', 'README.md'] & `git ls-files -z`.split("\0")
+  gem.files = Dir['{lib,spec}/**/*', 'LICENSE', 'README.md'] & `git ls-files -z`.split("\0")
+
+  gem.add_dependency 'mongo_mapper' , '>= 0.11.1'
 
   gem.add_development_dependency 'rspec'
+
   gem.required_rubygems_version = '>= 1.3.6'
 end
