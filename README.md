@@ -55,7 +55,7 @@ Simply add `self.non_versioned_keys << 'new_skipped_key'` somewhere in your mode
 
 ## Tested with
 
-* MongoMapper 0.8.3
+* MongoMapper 0.11.1
 * Ruby 1.9.2
 
 ## TODO
