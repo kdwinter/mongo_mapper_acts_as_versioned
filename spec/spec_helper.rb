@@ -1,6 +1,3 @@
-require 'mongo_mapper'
-require 'mongo_mapper/version'
-puts MongoMapper::Version
 require 'rspec'
 require File.expand_path('../../lib/acts_as_versioned', __FILE__)
 
