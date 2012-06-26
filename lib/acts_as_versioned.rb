@@ -47,11 +47,7 @@ module MongoMapper
             clone_attributes(self, rev)
             rev.version = version
 
-            begin
-              self.versions << rev
-              self.save
-            rescue BSON::InvalidDocument => e
-            end
+            self.versions << rev
           end
         end
 
