@@ -2,8 +2,6 @@
 
 Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/technoweenie/acts_as_versioned). Stores changed attributes in a Hash key inside an Embedded Document instead of copying all keys from the original model.
 
-*Note:* This plugin is intended for MongoMapper 0.8.6. The plugin architecture must be slightly changed for it to work on 0.9+.
-
 ## Usage
 
 ### Basic Example
@@ -55,7 +53,7 @@ Simply add `self.non_versioned_keys << 'new_skipped_key'` somewhere in your mode
 
 ## Tested with
 
-* MongoMapper 0.8.3
+* MongoMapper 0.11.1
 * Ruby 1.9.2
 
 ## TODO
