@@ -5,7 +5,7 @@ module MongoMapper
     module Versioned
       extend ActiveSupport::Concern
 
-      VERSION   = '0.1.1'
+      VERSION   = '0.1.2'
       CALLBACKS = [:save_version, :clear_old_versions]
 
       included do
@@ -112,7 +112,7 @@ module MongoMapper
         end
         
         def escape_mongo(obj)
-          obj.is_a?(MongoMapper::Extensions::Date) || obj.is_a?(MongoMapper::Extensions::Time) ? Date.to_mongo(obj) : obj
+          obj.is_a?(Date) || obj.is_a?(Time) ? Date.to_mongo(obj) : obj
         end
 
       protected
