@@ -96,7 +96,7 @@ module MongoMapper
           end
 
           self.class.versioned_keys.each do |attribute|
-            new_model[attribute] = orig_model[attribute].to_mongo
+            new_model[attribute] = escape_mongo(orig_model[attribute])
           end
         end
 
@@ -109,6 +109,10 @@ module MongoMapper
         end
 
         def empty_callback
+        end
+        
+        def escape_mongo(obj)
+          obj.is_a?(MongoMapper::Extensions::Date) || obj.is_a?(MongoMapper::Extensions::Time) ? Date.to_mongo(obj) : obj
         end
 
       protected
