@@ -61,10 +61,6 @@ Simply add `self.non_versioned_keys << 'new_skipped_key'` somewhere in your mode
 * Add loads more options
 * Properly document those options
 
-## Bundler note
-
-Make sure to specify `:require => 'acts_as_versioned'` in your Gemfile.
-
 ## Copyright
 
 Copyright (c) 2010 Gigamo &lt;gigamo@gmail.com&gt;. See LICENSE for details.
