@@ -96,7 +96,7 @@ module MongoMapper
           end
 
           self.class.versioned_keys.each do |attribute|
-            new_model[attribute] = orig_model[attribute]
+            new_model[attribute] = orig_model[attribute].to_mongo
           end
         end
 
