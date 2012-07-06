@@ -1,4 +1,4 @@
-# require File.expand_path('../lib/acts_as_versioned', __FILE__)
+require File.expand_path('../lib/acts_as_versioned', __FILE__)
 
 Gem::Specification.new do |gem|
   gem.name        = 'mongo_mapper_acts_as_versioned'
