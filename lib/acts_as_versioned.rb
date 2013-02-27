@@ -5,7 +5,7 @@ module MongoMapper
     module Versioned
       extend ActiveSupport::Concern
 
-      VERSION   = '0.1.2'
+      VERSION   = '0.1.3'
       CALLBACKS = [:save_version, :clear_old_versions]
 
       included do
@@ -38,90 +38,90 @@ module MongoMapper
         before_save :clear_old_versions
       end
 
-      module InstanceMethods
-        def save_version
-          if new_record? || save_version?
-            self.version = next_version
+    # module InstanceMethods - Deprecated
+      def save_version
+        if new_record? || save_version?
+          self.version = next_version
 
-            rev = self.class.versioned_class.new
-            clone_attributes(self, rev)
-            rev.version = version
+          rev = self.class.versioned_class.new
+          clone_attributes(self, rev)
+          rev.version = version
 
-            self.versions << rev
-          end
+          self.versions << rev
+        end
+      end
+
+      def clear_old_versions
+        return if self.class.max_version_limit == 0
+        excess_bagage = version.to_i - self.class.max_version_limit
+
+        if excess_bagage > 0
+          versions.reject! { |v| v.version.to_i <= excess_bagage }
+        end
+      end
+
+      def revert_to(rev)
+        if rev.is_a?(self.class.versioned_class)
+          return false if rev.new_record?
+        else
+          return false unless rev = versions[rev]
         end
 
-        def clear_old_versions
-          return if self.class.max_version_limit == 0
-          excess_bagage = version.to_i - self.class.max_version_limit
+        clone_attributes(rev, self)
+        self.version = rev.version
 
-          if excess_bagage > 0
-            versions.reject! { |v| v.version.to_i <= excess_bagage }
-          end
+        true
+      end
+
+      def revert_to!(rev)
+        revert_to(rev) and save_without_revision or false
+      end
+
+      def save_without_revision
+        save_without_revision!
+        true
+      rescue
+        false
+      end
+
+      def save_without_revision!
+        without_revision { save! }
+      end
+
+      def clone_attributes(orig_model, new_model)
+        if orig_model.is_a?(self.class.versioned_class)
+          orig_model = orig_model.modified
+        elsif new_model.is_a?(self.class.versioned_class)
+          new_model = new_model.modified
         end
 
-        def revert_to(rev)
-          if rev.is_a?(self.class.versioned_class)
-            return false if rev.new_record?
-          else
-            return false unless rev = versions[rev]
-          end
-
-          clone_attributes(rev, self)
-          self.version = rev.version
-
-          true
+        self.class.versioned_keys.each do |attribute|
+          new_model[attribute] = escape_mongo(orig_model[attribute])
         end
+      end
 
-        def revert_to!(rev)
-          revert_to(rev) and save_without_revision or false
-        end
+      def save_version?
+        (self.class.versioned_keys & changed).any?
+      end
 
-        def save_without_revision
-          save_without_revision!
-          true
-        rescue
-          false
-        end
+      def without_revision(&block)
+        self.class.without_revision(&block)
+      end
 
-        def save_without_revision!
-          without_revision { save! }
-        end
+      def empty_callback
+      end
+      
+      def escape_mongo(obj)
+        obj.is_a?(Date) || obj.is_a?(Time) ? Date.to_mongo(obj) : obj
+      end
 
-        def clone_attributes(orig_model, new_model)
-          if orig_model.is_a?(self.class.versioned_class)
-            orig_model = orig_model.modified
-          elsif new_model.is_a?(self.class.versioned_class)
-            new_model = new_model.modified
-          end
+    protected
 
-          self.class.versioned_keys.each do |attribute|
-            new_model[attribute] = escape_mongo(orig_model[attribute])
-          end
-        end
-
-        def save_version?
-          (self.class.versioned_keys & changed).any?
-        end
-
-        def without_revision(&block)
-          self.class.without_revision(&block)
-        end
-
-        def empty_callback
-        end
-        
-        def escape_mongo(obj)
-          obj.is_a?(Date) || obj.is_a?(Time) ? Date.to_mongo(obj) : obj
-        end
-
-      protected
-
-        def next_version
-          new_record? || versions.empty? ?
-            1 : versions.map(&:version).max.next
-        end
-      end # InstanceMethods
+      def next_version
+        new_record? || versions.empty? ?
+          1 : versions.map(&:version).max.next
+      end
+    # end InstanceMethods - Deprecated
 
       module ClassMethods
         def versioned_class
