@@ -1,11 +1,11 @@
-require 'active_support/concern'
+require 'active_support/core_ext'
 
 module MongoMapper
   module Acts
     module Versioned
       extend ActiveSupport::Concern
 
-      VERSION   = '0.1.4'
+      VERSION   = '0.1.5'
       CALLBACKS = [:save_version, :clear_old_versions]
 
       included do
