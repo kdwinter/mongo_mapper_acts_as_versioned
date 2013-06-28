@@ -1,121 +1,127 @@
+require 'active_support/core_ext'
+
 module MongoMapper
   module Acts
     module Versioned
-      VERSION   = '0.1.0'
+      extend ActiveSupport::Concern
+
+      VERSION   = '0.1.5'
       CALLBACKS = [:save_version, :clear_old_versions]
 
-      def self.configure(model)
-        model.class_eval do
-          cattr_accessor :versioned_class_name,
-            :non_versioned_keys, :max_version_limit
+      included do
+        cattr_accessor :versioned_class_name,
+          :non_versioned_keys, :max_version_limit
 
-          self.versioned_class_name = :Version
-          self.max_version_limit    = 0
-          self.non_versioned_keys   = %w[
-            _id _type created_at updated_at
-            creator_id updater_id version
-          ]
+        self.versioned_class_name = :Version
+        self.max_version_limit    = 0
+        self.non_versioned_keys   = %w[
+          _id _type created_at updated_at
+          creator_id updater_id version
+        ]
 
-          const_set(versioned_class_name, Class.new).class_eval do
-            include MongoMapper::EmbeddedDocument
+        const_set(versioned_class_name, Class.new).class_eval do
+          include MongoMapper::EmbeddedDocument
 
-            key :version,  Integer
-            key :modified, Hash
+          key :version,  Integer
+          key :modified, Hash
+        end
+
+        class_name = "#{self}::#{versioned_class_name}"
+        many :versions, :class => class_name.constantize do
+          def [](version)
+            detect { |doc| doc.version.to_s == version.to_s }
           end
+        end
 
-          class_name = "#{self}::#{versioned_class_name}"
-          many :versions, :class => class_name.constantize do
-            def [](version)
-              detect { |doc| doc.version.to_s == version.to_s }
-            end
-          end
+        key :version, Integer
+        before_save :save_version
+        before_save :clear_old_versions
+      end
 
-          key :version, Integer
-          before_save :save_version
-          before_save :clear_old_versions
+    # module InstanceMethods - Deprecated
+      def save_version
+        if new_record? || save_version?
+          self.version = next_version
+
+          rev = self.class.versioned_class.new
+          clone_attributes(self, rev)
+          rev.version = version
+
+          self.versions << rev
         end
       end
 
-      module InstanceMethods
-        def save_version
-          if new_record? || save_version?
-            self.version = next_version
+      def clear_old_versions
+        return if self.class.max_version_limit == 0
+        excess_bagage = version.to_i - self.class.max_version_limit
 
-            rev = self.class.versioned_class.new
-            clone_attributes(self, rev)
-            rev.version = version
+        if excess_bagage > 0
+          versions.reject! { |v| v.version.to_i <= excess_bagage }
+        end
+      end
 
-            self.versions << rev
-          end
+      def revert_to(rev)
+        if rev.is_a?(self.class.versioned_class)
+          return false if rev.new_record?
+        else
+          return false unless rev = versions[rev]
         end
 
-        def clear_old_versions
-          return if self.class.max_version_limit == 0
-          excess_bagage = version.to_i - self.class.max_version_limit
+        clone_attributes(rev, self)
+        self.version = rev.version
 
-          if excess_bagage > 0
-            versions.reject! { |v| v.version.to_i <= excess_bagage }
-          end
+        true
+      end
+
+      def revert_to!(rev)
+        revert_to(rev) and save_without_revision or false
+      end
+
+      def save_without_revision
+        save_without_revision!
+        true
+      rescue
+        false
+      end
+
+      def save_without_revision!
+        without_revision { save! }
+      end
+
+      def clone_attributes(orig_model, new_model)
+        if orig_model.is_a?(self.class.versioned_class)
+          orig_model = orig_model.modified
+        elsif new_model.is_a?(self.class.versioned_class)
+          new_model = new_model.modified
         end
 
-        def revert_to(rev)
-          if rev.is_a?(self.class.versioned_class)
-            return false if rev.new_record?
-          else
-            return false unless rev = versions[rev]
-          end
-
-          clone_attributes(rev, self)
-          self.version = rev.version
-
-          true
+        self.class.versioned_keys.each do |attribute|
+          new_model[attribute] = escape_mongo(orig_model[attribute])
         end
+      end
 
-        def revert_to!(rev)
-          revert_to(rev) and save_without_revision or false
-        end
+      def save_version?
+        (self.class.versioned_keys & changed).any?
+      end
 
-        def save_without_revision
-          save_without_revision!
-          true
-        rescue
-          false
-        end
+      def without_revision(&block)
+        self.class.without_revision(&block)
+      end
 
-        def save_without_revision!
-          without_revision { save! }
-        end
+      def empty_callback
+      end
+      
+      def escape_mongo(obj)
+        obj.is_a?(Date) || obj.is_a?(Time) ? Date.to_mongo(obj) : obj
+      end
 
-        def clone_attributes(orig_model, new_model)
-          if orig_model.is_a?(self.class.versioned_class)
-            orig_model = orig_model.modified
-          elsif new_model.is_a?(self.class.versioned_class)
-            new_model = new_model.modified
-          end
+    protected
 
-          self.class.versioned_keys.each do |attribute|
-            new_model[attribute] = orig_model[attribute]
-          end
-        end
-
-        def save_version?
-          (self.class.versioned_keys & changed).any?
-        end
-
-        def without_revision(&block)
-          self.class.without_revision(&block)
-        end
-
-        def empty_callback
-        end
-
-      protected
-
-        def next_version
-          new_record? || versions.empty? ?
-            1 : versions.map(&:version).max.next
-        end
-      end # InstanceMethods
+      def next_version
+        new_record? || versions.empty? ?
+          1 : versions.map(&:version).max.next
+      end
+    # end InstanceMethods - Deprecated
 
       module ClassMethods
         def versioned_class

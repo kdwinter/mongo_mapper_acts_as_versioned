@@ -18,5 +18,6 @@ Gem::Specification.new do |gem|
     Dir['{lib,spec}/**/*', 'LICENSE', 'README.md'] & `git ls-files -z`.split("\0")
 
   gem.add_development_dependency 'rspec'
-  gem.required_rubygems_version = '>= 1.3.6'
+  # gem.required_rubygems_version = '>= 1.3.6'
+  gem.add_dependency 'activesupport', '>= 3.0'
 end
