@@ -1,4 +1,4 @@
-require_relative 'active_support/concern'
+require 'active_support/concern'
 
 module MongoMapper
   module Acts
