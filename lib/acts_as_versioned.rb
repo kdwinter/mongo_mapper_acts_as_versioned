@@ -5,7 +5,7 @@ module MongoMapper
     module Versioned
       extend ActiveSupport::Concern
 
-      VERSION   = '0.1.0-next'
+      VERSION   = '0.2.0'
       CALLBACKS = [:save_version, :clear_old_versions]
 
       included do
