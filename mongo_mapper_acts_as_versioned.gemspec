@@ -1,8 +1,6 @@
-require File.expand_path('../lib/acts_as_versioned', __FILE__)
-
 Gem::Specification.new do |gem|
   gem.name        = 'mongo_mapper_acts_as_versioned'
-  gem.version     = MongoMapper::Acts::Versioned::VERSION
+  gem.version     = '0.2.0'
   gem.platform    = Gem::Platform::RUBY
   gem.authors     = ['Gigamo']
   gem.email       = ['gigamo@gmail.com']
