@@ -55,7 +55,7 @@ Simply add `do_not_version 'new_skipped_key', 'another_skipped_key'` somewhere i
 ## Tested with
 
 * MongoMapper 0.11.1, 0.13.1
-* Ruby 1.9.2
+* Ruby 1.9.2 up to 2.2.2
 
 ## Older MongoMapper versions
 
