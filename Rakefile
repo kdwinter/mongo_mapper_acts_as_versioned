@@ -4,7 +4,7 @@ require File.expand_path('../lib/acts_as_versioned', __FILE__)
 
 task :spec do
   files_to_run = Dir['spec/**/*_spec.rb'].join(' ')
-  sh "rspec -cfs #{files_to_run}"
+  sh "rspec #{files_to_run}"
 end
 
 task :default => :spec

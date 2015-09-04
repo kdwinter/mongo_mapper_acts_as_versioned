@@ -26,7 +26,7 @@ describe MongoMapper::Acts::Versioned do
 
     it 'should save a versioned copy' do
       l = Landmark.create(:title => 'title')
-      l.new_record?.should be_false
+      l.new_record?.should be_falsy
       l.versions.size.should == 1
       l.version.should == 1
       l.versions.first.should be_a(Landmark.versioned_class)
@@ -80,7 +80,7 @@ describe MongoMapper::Acts::Versioned do
       l.versions.size.should == 10
       l.title.should == 'title10'
 
-      l.revert_to!(7).should be_true
+      l.revert_to!(7).should be_truthy
       l = l.reload
       l.version.should == 7
       l.versions.size.should == 10
@@ -99,7 +99,7 @@ describe MongoMapper::Acts::Versioned do
       l.versions.size.should == 10
       l.title.should == 'title10'
 
-      l.revert_to!(l.versions[7]).should be_true
+      l.revert_to!(l.versions[7]).should be_truthy
       l = l.reload
       l.version.should == 7
       l.versions.size.should == 10
@@ -163,9 +163,14 @@ describe MongoMapper::Acts::Versioned do
       l.reload.versions[2].modified.should == {'title' => 'changed title'}
     end
 
+    it 'should save when a version was created' do
+      l = Landmark.create(:title => 'title')
+      l.versions[1].created_at.should be_instance_of(Time)
+    end
+
     it 'should save a versioned class with sci' do
       s = Sublandmark.create!(:title => 'first title')
-      s.new_record?.should be_false
+      s.new_record?.should be_falsy
       s.version.should == 1
 
       s.versions.size.should == 1
@@ -184,7 +189,7 @@ describe MongoMapper::Acts::Versioned do
       l.version.should == 5
       l.versions.size.should == 5
       l.title.should == 'other title5'
-      l.revert_to!(3).should be_true
+      l.revert_to!(3).should be_truthy
       l = l.reload
       l.version.should == 3
       l.versions.size.should == 5
@@ -201,7 +206,7 @@ describe MongoMapper::Acts::Versioned do
       s.version.should == 5
       s.versions.size.should == 5
       s.title.should == 'title5'
-      s.revert_to!(3).should be_true
+      s.revert_to!(3).should be_truthy
       s = s.reload
       s.version.should == 3
       s.versions.size.should == 5

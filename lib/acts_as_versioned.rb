@@ -22,8 +22,9 @@ module MongoMapper
         const_set(versioned_class_name, Class.new).class_eval do
           include MongoMapper::EmbeddedDocument
 
-          key :version,  Integer
-          key :modified, Hash
+          key :version,    Integer
+          key :modified,   Hash
+          key :created_at, Time
         end
 
         class_name = "#{self}::#{versioned_class_name}"
@@ -45,6 +46,7 @@ module MongoMapper
           rev = self.class.versioned_class.new
           clone_attributes(self, rev)
           rev.version = version
+          rev.created_at = Time.current
 
           self.versions << rev
         end
@@ -127,7 +129,7 @@ module MongoMapper
         end
 
         def do_not_version(*args)
-          self.non_versioned_keys = non_versioned_keys | args
+          self.non_versioned_keys |= args
         end
 
         def without_revision
