@@ -18,8 +18,6 @@ module MongoMapper
         timestamps!
 
         belongs_to :entity, polymorphic: true
-
-        scope :[], ->(version) { where(version: version) }
       end
 
       extend ActiveSupport::Concern
