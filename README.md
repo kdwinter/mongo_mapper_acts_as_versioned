@@ -73,31 +73,30 @@ Versions are now only loaded when specifically requested. Existing versions in y
 will however not be automatically updated.
 
 Here's an example script that can do it for you.  
-Assuming a model called Page, you can convert its old versions through a script like such:
+Assuming models called Page and Template, you can convert its old versions through a script
+like such:
 
 ```ruby
-# Recreate the old embedded document
-class Page::Version
-  include MongoMapper::EmbeddedDocument
-  key :modified
-  key :version
-end
+models = [Page, Template]
 
-# Monkeypatch the model
-class Page
-  undef :versions
-  many :versions, class_name: "Page::Version"
-end
+models.each do |model|
+  model.const_set(:Version, Class.new {
+    include MongoMapper::EmbeddedDocument
+    key :modified
+    key :version
+  })
 
-# Create new version documents for every old embedded version
-Page.all.each do |page|
-  page.versions.each do |old_version|
-    MongoMapper::Acts::Versioned::DocumentVersion.create(
-      entity_type: "Page",
-      entity_id:   page.id,
-      modified:    old_version.modified,
-      version:     old_version.version
-    )
+  model.many :versions, class_name: "#{model.name}::Version"
+
+  model.all.each do |document|
+    document.versions.each do |old_version|
+      MongoMapper::Acts::Versioned::DocumentVersion.create(
+        entity_type: model.name,
+        entity_id:   document.id,
+        modified:    old_version.modified,
+        version:     old_version.version
+      ) || warn("Didnt create new version for #{old_version.inspect}")
+    end
   end
 end
 ```

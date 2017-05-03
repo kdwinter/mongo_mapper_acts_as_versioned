@@ -144,7 +144,7 @@ module MongoMapper
 
       module ClassMethods
         def versioned_keys
-          keys.keys - non_versioned_keys
+          keys.keys - non_versioned_keys.map(&:to_s)
         end
 
         def do_not_version(*args)

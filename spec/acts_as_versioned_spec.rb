@@ -7,7 +7,7 @@ describe MongoMapper::Acts::Versioned do
         include MongoMapper::Document
 
         plugin MongoMapper::Acts::Versioned
-        do_not_version 'depth'
+        do_not_version :depth
 
         key :title, String
         key :depth, Integer
