@@ -16,6 +16,8 @@ Gem::Specification.new do |gem|
     Dir['{lib,spec}/**/*', 'LICENSE', 'README.md'] & `git ls-files -z`.split("\0")
 
   gem.add_dependency 'activesupport'
+  gem.add_dependency 'mongo_mapper'
+  gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec'
   gem.required_rubygems_version = '>= 1.3.6'
 end

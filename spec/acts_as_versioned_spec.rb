@@ -19,17 +19,12 @@ describe MongoMapper::Acts::Versioned do
       end
     end
 
-    it 'should set the correct properties on the version class' do
-      Landmark.versioned_class.should == Landmark::Version
-      Sublandmark.versioned_class.should == Landmark::Version
-    end
-
     it 'should save a versioned copy' do
       l = Landmark.create(:title => 'title')
       l.new_record?.should be_falsy
       l.versions.size.should == 1
       l.version.should == 1
-      l.versions.first.should be_a(Landmark.versioned_class)
+      l.versions.first.should be_a(MongoMapper::Acts::Versioned::DocumentVersion)
     end
 
     it 'should clear old versions when a limit is set' do
@@ -99,7 +94,7 @@ describe MongoMapper::Acts::Versioned do
       l.versions.size.should == 10
       l.title.should == 'title10'
 
-      l.revert_to!(l.versions[7]).should be_truthy
+      l.revert_to!(l.document_version(7)).should be_truthy
       l = l.reload
       l.version.should == 7
       l.versions.size.should == 10
@@ -114,7 +109,7 @@ describe MongoMapper::Acts::Versioned do
       end
 
       l_version = l.reload.versions.last
-      l_version._root_document.should == l.reload
+      l_version.entity.should == l.reload
     end
 
     it 'should not create new versions for skipped keys' do
@@ -157,15 +152,15 @@ describe MongoMapper::Acts::Versioned do
 
     it 'should store changes in a hash' do
       l = Landmark.create(:title => 'title')
-      l.versions[1].modified.should == {'title' => 'title'}
+      l.document_version(1).modified.should == {'title' => 'title'}
 
       l.update_attributes(:title => 'changed title', :depth => 1)
-      l.reload.versions[2].modified.should == {'title' => 'changed title'}
+      l.reload.document_version(2).modified.should == {'title' => 'changed title'}
     end
 
     it 'should save when a version was created' do
       l = Landmark.create(:title => 'title')
-      l.versions[1].created_at.should be_instance_of(Time)
+      l.document_version(1).created_at.should be_instance_of(Time)
     end
 
     it 'should save a versioned class with sci' do
@@ -174,8 +169,8 @@ describe MongoMapper::Acts::Versioned do
       s.version.should == 1
 
       s.versions.size.should == 1
-      s.versions.first.should be_a(Landmark.versioned_class)
-      s.versions.first._root_document.should == s
+      s.versions.first.should be_a(MongoMapper::Acts::Versioned::DocumentVersion)
+      s.versions.first.entity_type.should == "Sublandmark"
     end
 
     it 'should rollback with sci' do

@@ -5,3 +5,4 @@ Thumbs.db
 *.rbc
 *.tmproj
 *.gem
+Gemfile.lock

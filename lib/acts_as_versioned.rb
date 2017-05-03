@@ -1,54 +1,72 @@
 require 'active_support/concern'
+require "active_model"
+require "activemodel-serializers-xml"
+require "mongo_mapper"
 
 module MongoMapper
   module Acts
     module Versioned
+      class DocumentVersion
+        include MongoMapper::Document
+
+        set_collection_name "document_versions"
+
+        key :modified,    Hash
+        key :version,     Integer
+        key :entity_id,   ObjectId
+        key :entity_type, String
+        timestamps!
+
+        belongs_to :entity, polymorphic: true
+
+        scope :[], ->(version) { where(version: version) }
+      end
+
       extend ActiveSupport::Concern
 
-      VERSION   = '0.2.0'
+      VERSION   = '0.3.0'
       CALLBACKS = [:save_version, :clear_old_versions]
 
       included do
-        cattr_accessor :versioned_class_name,
-          :non_versioned_keys, :max_version_limit
+        class_attribute :non_versioned_keys, :max_version_limit
 
-        self.versioned_class_name = :Version
         self.max_version_limit    = 0
-        self.non_versioned_keys   = %w[
+        self.non_versioned_keys   = %w(
           _id _type created_at updated_at
           creator_id updater_id version
-        ]
-
-        const_set(versioned_class_name, Class.new).class_eval do
-          include MongoMapper::EmbeddedDocument
-
-          key :version,    Integer
-          key :modified,   Hash
-          key :created_at, Time
-        end
-
-        class_name = "#{self}::#{versioned_class_name}"
-        many :versions, :class => class_name.constantize do
-          def [](version)
-            detect { |doc| doc.version.to_s == version.to_s }
-          end
-        end
+        )
 
         key :version, Integer
         before_save :save_version
         before_save :clear_old_versions
       end
 
+      def versions
+        MongoMapper::Acts::Versioned::DocumentVersion.where(
+          entity_type: self.class.name, entity_id: self.id
+        )
+      end
+
+      def document_version(given_version)
+        versions.where(version: given_version).first
+      end
+
+      def current_document_version
+        document_version(version)
+      end
+
       def save_version
         if new_record? || save_version?
           self.version = next_version
 
-          rev = self.class.versioned_class.new
-          clone_attributes(self, rev)
+          rev = MongoMapper::Acts::Versioned::DocumentVersion.new
+          rev.entity_type = self.class.name
+          rev.entity_id = id
           rev.version = version
-          rev.created_at = Time.current
 
-          self.versions << rev
+          clone_attributes(self, rev)
+
+          rev.save
         end
       end
 
@@ -57,15 +75,15 @@ module MongoMapper
         excess_bagage = version.to_i - self.class.max_version_limit
 
         if excess_bagage > 0
-          versions.reject! { |v| v.version.to_i <= excess_bagage }
+          versions.select { |v| v.version.to_i <= excess_bagage }.map(&:delete)
         end
       end
 
       def revert_to(rev)
-        if rev.is_a?(self.class.versioned_class)
+        if rev.is_a?(MongoMapper::Acts::Versioned::DocumentVersion)
           return false if rev.new_record?
         else
-          return false unless rev = versions[rev]
+          return false unless rev = document_version(rev)
         end
 
         clone_attributes(rev, self)
@@ -90,9 +108,9 @@ module MongoMapper
       end
 
       def clone_attributes(orig_model, new_model)
-        if orig_model.is_a?(self.class.versioned_class)
+        if orig_model.is_a?(MongoMapper::Acts::Versioned::DocumentVersion)
           orig_model = orig_model.modified
-        elsif new_model.is_a?(self.class.versioned_class)
+        elsif new_model.is_a?(MongoMapper::Acts::Versioned::DocumentVersion)
           new_model = new_model.modified
         end
 
@@ -115,21 +133,21 @@ module MongoMapper
     protected
 
       def next_version
-        new_record? || versions.empty? ?
-          1 : versions.map(&:version).max.next
+        new_record? || versions.count == 0 ?
+          1 : versions.fields(:version).map(&:version).max.next
       end
 
       module ClassMethods
-        def versioned_class
-          const_get versioned_class_name
-        end
-
         def versioned_keys
           keys.keys - non_versioned_keys
         end
 
         def do_not_version(*args)
           self.non_versioned_keys |= args
+        end
+
+        def max_versions(amount)
+          self.max_version_limit = amount
         end
 
         def without_revision

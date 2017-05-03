@@ -1,6 +1,7 @@
-# ActsAsVersioned for [MongoMapper](http://github.com/jnunemaker/mongomapper)
+# ActsAsVersioned for [MongoMapper](http://github.com/mongomapper/mongomapper)
 
-Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/technoweenie/acts_as_versioned). Stores changed attributes in a Hash key inside an Embedded Document instead of copying all keys from the original model.
+Basic MongoMapper port of technoweenie's [acts_as_versioned](http://github.com/technoweenie/acts_as_versioned).
+Stores changed attributes in a single collection using a general Hash key.
 
 
 ## Usage
@@ -54,12 +55,16 @@ Simply add `do_not_version 'new_skipped_key', 'another_skipped_key'` somewhere i
 
 ## Tested with
 
-* MongoMapper 0.11.1, 0.13.1
-* Ruby 1.9.2 up to 2.2.2
+* MongoMapper 0.11.1, 0.13.1, 0.14.0
+* Ruby 1.9.2 up to 2.4.0
 
 ## Older MongoMapper versions
 
 * For MongoMapper <= 0.8.6, see the master branch of this repository.
+
+## Older embedded document versions
+
+* See the next branch of this repository.
 
 ## Bundler note
 
