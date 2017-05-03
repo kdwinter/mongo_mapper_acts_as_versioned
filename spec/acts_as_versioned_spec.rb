@@ -21,10 +21,10 @@ describe MongoMapper::Acts::Versioned do
 
     it 'should save a versioned copy' do
       l = Landmark.create(:title => 'title')
-      l.new_record?.should be_falsy
-      l.versions.size.should == 1
-      l.version.should == 1
-      l.versions.first.should be_a(MongoMapper::Acts::Versioned::DocumentVersion)
+      expect(l.new_record?).to be_falsy
+      expect(l.versions.size).to eq 1
+      expect(l.version).to eq 1
+      expect(l.versions.first).to be_a(MongoMapper::Acts::Versioned::DocumentVersion)
     end
 
     it 'should clear old versions when a limit is set' do
@@ -37,20 +37,20 @@ describe MongoMapper::Acts::Versioned do
       end
 
       l = l.reload
-      l.versions.size.should == 3
-      l.versions.first.version.should == 8
-      l.versions.last.version.should == 10
+      expect(l.versions.size).to eq 3
+      expect(l.versions.first.version).to eq 8
+      expect(l.versions.last.version).to eq 10
 
       Landmark.max_version_limit = 0
     end
 
     it 'should save without revision' do
       l = Landmark.create(:title => 'title')
-      l.version.should == 1
+      expect(l.version).to eq 1
 
       l.update_attributes(:title => 'changed')
       l = l.reload
-      l.version.should == 2
+      expect(l.version).to eq 2
 
       old_versions = l.versions.size
 
@@ -60,7 +60,7 @@ describe MongoMapper::Acts::Versioned do
         l.update_attributes :title => 'changed again'
       end
 
-      l.reload.versions.size.should == old_versions
+      expect(l.reload.versions.size).to eq old_versions
     end
 
     it 'should rollback with version number' do
@@ -71,15 +71,15 @@ describe MongoMapper::Acts::Versioned do
       end
 
       l = l.reload
-      l.version.should == 10
-      l.versions.size.should == 10
-      l.title.should == 'title10'
+      expect(l.version).to eq 10
+      expect(l.versions.size).to eq 10
+      expect(l.title).to eq 'title10'
 
-      l.revert_to!(7).should be_truthy
+      expect(l.revert_to!(7)).to be_truthy
       l = l.reload
-      l.version.should == 7
-      l.versions.size.should == 10
-      l.title.should == 'title7'
+      expect(l.version).to eq 7
+      expect(l.versions.size).to eq 10
+      expect(l.title).to eq 'title7'
     end
 
     it 'should rollback with version class' do
@@ -90,15 +90,15 @@ describe MongoMapper::Acts::Versioned do
       end
 
       l = l.reload
-      l.version.should == 10
-      l.versions.size.should == 10
-      l.title.should == 'title10'
+      expect(l.version).to eq 10
+      expect(l.versions.size).to eq 10
+      expect(l.title).to eq 'title10'
 
-      l.revert_to!(l.document_version(7)).should be_truthy
+      expect(l.revert_to!(l.document_version(7))).to be_truthy
       l = l.reload
-      l.version.should == 7
-      l.versions.size.should == 10
-      l.title.should == 'title7'
+      expect(l.version).to eq 7
+      expect(l.versions.size).to eq 10
+      expect(l.title).to eq 'title7'
     end
 
     it 'should have versioned records belong to its parent' do
@@ -109,68 +109,68 @@ describe MongoMapper::Acts::Versioned do
       end
 
       l_version = l.reload.versions.last
-      l_version.entity.should == l.reload
+      expect(l_version.entity).to eq l.reload
     end
 
     it 'should not create new versions for skipped keys' do
       l = Landmark.create(:title => 'title')
       l.update_attributes(:depth => 1)
       l = l.reload
-      l.version.should == 1
-      l.versions.size.should == 1
+      expect(l.version).to eq 1
+      expect(l.versions.size).to eq 1
     end
 
     it 'should create a new version even if a skipped key is added' do
       l = Landmark.create(:title => 'title')
       l.update_attributes(:title => 'new title', :depth => 1)
       l = l.reload
-      l.version.should == 2
-      l.versions.size.should == 2
+      expect(l.version).to eq 2
+      expect(l.versions.size).to eq 2
     end
 
     it 'should remember skipped keys through versions' do
       l = Landmark.create(:title => 'title')
       l.update_attributes(:title => 'new title')
       l = l.reload
-      l.version.should == 2
-      l.versions.size.should == 2
+      expect(l.version).to eq 2
+      expect(l.versions.size).to eq 2
 
       l.update_attributes(:depth => 1)
       l = l.reload
-      l.version.should == 2
-      l.versions.size.should == 2
-      l.depth.should == 1
-      l.title.should == 'new title'
+      expect(l.version).to eq 2
+      expect(l.versions.size).to eq 2
+      expect(l.depth).to eq 1
+      expect(l.title).to eq 'new title'
 
       l.revert_to!(1)
       l = l.reload
-      l.version.should == 1
-      l.versions.size.should == 2
-      l.depth.should == 1
-      l.title.should == 'title'
+      expect(l.version).to eq 1
+      expect(l.versions.size).to eq 2
+      expect(l.depth).to eq 1
+      expect(l.title).to eq 'title'
     end
 
     it 'should store changes in a hash' do
       l = Landmark.create(:title => 'title')
-      l.document_version(1).modified.should == {'title' => 'title'}
+      expect(l.document_version(1).modified).to eq({'title' => 'title'})
 
       l.update_attributes(:title => 'changed title', :depth => 1)
-      l.reload.document_version(2).modified.should == {'title' => 'changed title'}
+      expect(l.reload.document_version(2).modified).to eq({'title' => 'changed title'})
     end
 
     it 'should save when a version was created' do
       l = Landmark.create(:title => 'title')
-      l.document_version(1).created_at.should be_instance_of(Time)
+      expect(l.document_version(1).created_at).to be_instance_of(Time)
     end
 
     it 'should save a versioned class with sci' do
       s = Sublandmark.create!(:title => 'first title')
-      s.new_record?.should be_falsy
-      s.version.should == 1
+      expect(s.new_record?).to be_falsy
+      expect(s.version).to eq 1
 
-      s.versions.size.should == 1
-      s.versions.first.should be_a(MongoMapper::Acts::Versioned::DocumentVersion)
-      s.versions.first.entity_type.should == "Sublandmark"
+      expect(s.versions.size).to eq 1
+      expect(s.versions.first).to be_a(MongoMapper::Acts::Versioned::DocumentVersion)
+      expect(s.versions.first.entity_type).to eq "Sublandmark"
     end
 
     it 'should rollback with sci' do
@@ -181,14 +181,14 @@ describe MongoMapper::Acts::Versioned do
       end
 
       l = l.reload
-      l.version.should == 5
-      l.versions.size.should == 5
-      l.title.should == 'other title5'
-      l.revert_to!(3).should be_truthy
+      expect(l.version).to eq 5
+      expect(l.versions.size).to eq 5
+      expect(l.title).to eq 'other title5'
+      expect(l.revert_to!(3)).to be_truthy
       l = l.reload
-      l.version.should == 3
-      l.versions.size.should == 5
-      l.title.should == 'other title3'
+      expect(l.version).to eq 3
+      expect(l.versions.size).to eq 5
+      expect(l.title).to eq 'other title3'
 
       s = Sublandmark.create(:title => 'title')
       (2..5).each do |i|
@@ -197,15 +197,15 @@ describe MongoMapper::Acts::Versioned do
       end
 
       s = s.reload
-      s.versions.should_not == l.versions
-      s.version.should == 5
-      s.versions.size.should == 5
-      s.title.should == 'title5'
-      s.revert_to!(3).should be_truthy
+      expect(s.versions).not_to eq l.versions
+      expect(s.version).to eq 5
+      expect(s.versions.size).to eq 5
+      expect(s.title).to eq 'title5'
+      expect(s.revert_to!(3)).to be_truthy
       s = s.reload
-      s.version.should == 3
-      s.versions.size.should == 5
-      s.title.should == 'title3'
+      expect(s.version).to eq 3
+      expect(s.versions.size).to eq 5
+      expect(s.title).to eq 'title3'
     end
   end
 
@@ -229,10 +229,10 @@ describe MongoMapper::Acts::Versioned do
     it 'should version only the subclass' do
       page = Page.create(:title => 'page title')
       post = Post.create(:title => 'post title')
-      page.version.should == 1
-      page.versions.size.should == 1
-      post.version.should == 1
-      post.versions.size.should == 1
+      expect(page.version).to eq 1
+      expect(page.versions.size).to eq 1
+      expect(post.version).to eq 1
+      expect(post.versions.size).to eq 1
     end
   end
 end
