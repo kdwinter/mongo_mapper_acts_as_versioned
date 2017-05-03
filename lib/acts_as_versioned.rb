@@ -1,6 +1,12 @@
 require 'active_support/concern'
 require "active_model"
-require "activemodel-serializers-xml"
+if ActiveSupport.version >= Gem::Version.new("5.0.0")
+  begin
+    require "activemodel-serializers-xml"
+  rescue LoadError
+    warn "Couldn't load AM serializers. Things might break."
+  end
+end
 require "mongo_mapper"
 
 module MongoMapper
@@ -22,7 +28,7 @@ module MongoMapper
 
       extend ActiveSupport::Concern
 
-      VERSION   = '0.3.0'
+      VERSION   = '0.3.1'
       CALLBACKS = [:save_version, :clear_old_versions]
 
       included do
