@@ -1,5 +1,5 @@
-require 'active_support/concern'
-require "active_model"
+require "active_support"
+require "active_support/concern"
 if ActiveSupport.version >= Gem::Version.new("5.0.0")
   begin
     require "activemodel-serializers-xml"
@@ -8,6 +8,7 @@ if ActiveSupport.version >= Gem::Version.new("5.0.0")
   end
 end
 require "mongo_mapper"
+require "active_model"
 
 module MongoMapper
   module Acts
@@ -28,7 +29,7 @@ module MongoMapper
 
       extend ActiveSupport::Concern
 
-      VERSION   = '0.3.1'
+      VERSION   = "0.3.2"
       CALLBACKS = [:save_version, :clear_old_versions]
 
       included do
