@@ -14,7 +14,7 @@ require "active_model"
 module MongoMapper
   module Acts
     module Versioned
-      VERSION = "0.3.3"
+      VERSION = "0.3.4"
 
       # This model stores all version information.
       class DocumentVersion

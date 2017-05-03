@@ -1,6 +1,6 @@
 Gem::Specification.new do |gem|
   gem.name        = 'mongo_mapper_acts_as_versioned'
-  gem.version     = '0.3.3'
+  gem.version     = '0.3.4'
   gem.platform    = Gem::Platform::RUBY
   gem.authors     = ['Kenneth De Winter']
   gem.email       = ['kdwinter@protonmail.com']
