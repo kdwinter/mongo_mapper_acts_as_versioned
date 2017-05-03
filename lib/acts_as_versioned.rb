@@ -47,7 +47,7 @@ module MongoMapper
         self.max_version_limit  = 0
         self.non_versioned_keys = %w(
           _id _type created_at updated_at
-          creator_id updater_id version
+          creator_id updater_id version versions
         )
 
         # The document's current version.
